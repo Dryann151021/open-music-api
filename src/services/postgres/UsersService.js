@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 
 const InvariantError = require('../../exception/InvariantError');
 const NotFoundError = require('../../exception/NotFoundError');
+const AuthenticationError = require('../../exception/AuthenticationError');
 
 class UsersService {
   constructor() {
@@ -58,6 +59,30 @@ class UsersService {
     }
 
     return result.rows[0];
+  }
+
+  /* eslint-disable */
+  async verifyUserCredential(username, password) {
+    /* eslint-enable */
+    const query = {
+      text: 'SELECT id, password FROM users WHERE username = $1',
+      values: [username],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('User tidak ditemukan');
+    }
+
+    const { id, password: encryptedPassword } = result.rows[0];
+    const match = await bcrypt.compare(password, encryptedPassword);
+
+    if (!match) {
+      throw new AuthenticationError('Kredensial salah');
+    }
+
+    return id;
   }
 }
 
