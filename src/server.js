@@ -1,17 +1,28 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
-const album = require('./api/album');
-const song = require('./api/song');
-const albumValidator = require('./validator/album');
-const songValidator = require('./validator/song');
-const AlbumService = require('./services/postgres/AlbumService');
-const SongService = require('./services/postgres/SongService');
+
+// albums
+const albums = require('./api/albums');
+const albumValidator = require('./validator/albums');
+const AlbumsService = require('./services/postgres/AlbumsService');
+
+// songs
+const songs = require('./api/songs');
+const songValidator = require('./validator/songs');
+const SongsService = require('./services/postgres/SongsService');
+
+// users
+const users = require('./api/users');
+const userValidator = require('./validator/users');
+const UsersService = require('./services/postgres/UsersService');
+
 const ClientError = require('./exception/ClientError');
 
 const init = async () => {
-  const albumService = new AlbumService();
-  const songService = new SongService();
+  const albumsService = new AlbumsService();
+  const songsService = new SongsService();
+  const usersService = new UsersService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -25,17 +36,24 @@ const init = async () => {
 
   await server.register([
     {
-      plugin: album,
+      plugin: albums,
       options: {
-        service: albumService,
+        service: albumsService,
         validator: albumValidator,
       },
     },
     {
-      plugin: song,
+      plugin: songs,
       options: {
-        service: songService,
+        service: songsService,
         validator: songValidator,
+      },
+    },
+    {
+      plugin: users,
+      options: {
+        service: usersService,
+        validator: userValidator,
       },
     },
   ]);
@@ -57,6 +75,7 @@ const init = async () => {
         return response;
       }
 
+      console.log(response);
       const newResponse = h.response({
         status: 'fail',
         message: 'terjadi kegagalan pada server kami',
