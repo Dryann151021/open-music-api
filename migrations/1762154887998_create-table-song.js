@@ -13,11 +13,11 @@ export const up = (pgm) => {
       notNull: true,
     },
     performer: {
-      type: 'VArchar(50)',
+      type: 'VARCHAR(50)',
       notNull: true,
     },
     genre: {
-      type: 'varchar(50)',
+      type: 'VARCHAR(50)',
       notNull: true,
     },
     duration: {
