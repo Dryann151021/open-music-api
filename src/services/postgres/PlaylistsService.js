@@ -6,13 +6,13 @@ const NotFoundError = require('../../exception/NotFoundError');
 const AuthorizationError = require('../../exception/AuthorizationError');
 
 class PlaylistsService {
-  constructor(collaborationsService) {
+  constructor(collaborationsService, activitiesService) {
     this._pool = new Pool();
     this._collaborationsService = collaborationsService;
+    this._activitiesService = activitiesService;
   }
 
   async addPlaylist({ name, owner }) {
-    console.log(owner);
     const id = `playlist-${nanoid(10)}`;
     const query = {
       text: 'INSERT INTO playlists VALUES($1, $2, $3) RETURNING id',
@@ -30,8 +30,10 @@ class PlaylistsService {
     const query = {
       text: `SELECT playlists.id, playlists.name, users.username
              FROM playlists
-             LEFT JOIN users ON users.id = playlists.owner
-             WHERE playlists.owner = $1`,
+             LEFT JOIN users ON playlists.owner = users.id
+             LEFT JOIN collaborations ON playlists.id = collaborations.playlist_id
+             WHERE playlists.owner = $1 OR collaborations.user_id = $1
+             GROUP BY playlists.id, users.username`,
       values: [owner],
     };
 
@@ -51,7 +53,7 @@ class PlaylistsService {
     }
   }
 
-  async addSongOnPlaylist(playlistId, songId) {
+  async addSongOnPlaylist(playlistId, songId, userId) {
     const checkSongQuery = {
       text: 'SELECT id FROM songs WHERE id = $1',
       values: [songId],
@@ -72,6 +74,13 @@ class PlaylistsService {
     if (!result.rows.length) {
       throw new InvariantError('Lagu gagal ditambah kedalam playlist');
     }
+
+    await this._activitiesService.addActivity({
+      playlistId,
+      songId,
+      userId,
+      action: 'add',
+    });
 
     return result.rows[0].id;
   }
@@ -110,7 +119,7 @@ class PlaylistsService {
     return playlist;
   }
 
-  async deleteSongOnPlaylist({ playlistId, songId }) {
+  async deleteSongOnPlaylist({ playlistId, songId, userId }) {
     const query = {
       text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
       values: [playlistId, songId],
@@ -120,6 +129,12 @@ class PlaylistsService {
     if (!result.rows.length) {
       throw new InvariantError('Gagal menghapus lagu pada playlist');
     }
+    await this._activitiesService.addActivity({
+      playlistId,
+      songId,
+      userId,
+      action: 'delete',
+    });
   }
 
   async verifyPlaylistOwner(id, owner) {
@@ -135,7 +150,6 @@ class PlaylistsService {
     }
 
     const playlist = result.rows[0];
-    console.log(result);
 
     if (playlist.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');

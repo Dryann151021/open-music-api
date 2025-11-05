@@ -1,5 +1,5 @@
 export const up = (pgm) => {
-  pgm.createTable('playlist_song_activities', {
+  pgm.createTable('activities', {
     id: {
       type: 'VARCHAR(50)',
       primaryKey: true,
@@ -29,24 +29,24 @@ export const up = (pgm) => {
 
   // Foreign key constraints
   pgm.addConstraint(
-    'playlist_song_activities',
-    'fk_playlist_song_activities.playlist_id_playlists.id',
+    'activities',
+    'fk_activities.playlist_id_playlists.id',
     'FOREIGN KEY(playlist_id) REFERENCES playlists(id) ON DELETE CASCADE'
   );
 
   pgm.addConstraint(
-    'playlist_song_activities',
-    'fk_playlist_song_activities.song_id_songs.id',
+    'activities',
+    'fk_activities.song_id_songs.id',
     'FOREIGN KEY(song_id) REFERENCES songs(id) ON DELETE CASCADE'
   );
 
   pgm.addConstraint(
-    'playlist_song_activities',
-    'fk_playlist_song_activities.user_id_users.id',
+    'activities',
+    'fk_activities.user_id_users.id',
     'FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE'
   );
 };
 
 export const down = (pgm) => {
-  pgm.dropTable('playlist_song_activities');
+  pgm.dropTable('activities');
 };

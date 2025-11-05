@@ -34,6 +34,10 @@ const collaborations = require('./api/collaborations');
 const collaborationsValidator = require('./validator/collaborations');
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 
+// playlistActivities
+const playlistActivities = require('./api/activities');
+const ActivitiesService = require('./services/postgres/ActivitiesService');
+
 const ClientError = require('./exception/ClientError');
 
 const init = async () => {
@@ -42,7 +46,11 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const collaborationsService = new CollaborationsService();
-  const playlistsService = new PlaylistsService(collaborationsService);
+  const activitiesService = new ActivitiesService();
+  const playlistsService = new PlaylistsService(
+    collaborationsService,
+    activitiesService
+  );
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -122,6 +130,13 @@ const init = async () => {
         validator: collaborationsValidator,
       },
     },
+    {
+      plugin: playlistActivities,
+      options: {
+        service: activitiesService,
+        playlistsService,
+      },
+    },
   ]);
 
   server.ext('onPreResponse', (Request, h) => {
@@ -141,7 +156,6 @@ const init = async () => {
         return response;
       }
 
-      console.log(response);
       const newResponse = h.response({
         status: 'fail',
         message: 'terjadi kegagalan pada server kami',
