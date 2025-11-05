@@ -24,7 +24,7 @@ export const up = (pgm) => {
     },
   });
 
-  // untuk menambhakan foreign key constraint
+  // Foreign key constraints
   pgm.addConstraint(
     'collaborations',
     'fk_collaborations.playlist_id_playlist.id',
@@ -37,11 +37,6 @@ export const up = (pgm) => {
   );
 };
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
 export const down = (pgm) => {
   pgm.dropTable('collaborations');
 };

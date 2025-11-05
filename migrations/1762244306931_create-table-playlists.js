@@ -13,6 +13,7 @@ export const up = (pgm) => {
     },
   });
 
+  // Foreign key constraints
   pgm.addConstraint(
     'playlists',
     'fk_playlists.owner_id_owner.id',

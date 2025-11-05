@@ -21,7 +21,7 @@ class UsersHandler {
     const response = h.response({
       status: 'success',
       data: {
-        userId: userId,
+        userId,
       },
     });
     response.code(201);
@@ -35,7 +35,7 @@ class UsersHandler {
     const response = h.response({
       status: 'success',
       data: {
-        user: user,
+        user,
       },
     });
     response.code(200);

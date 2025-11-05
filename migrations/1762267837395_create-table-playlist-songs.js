@@ -14,6 +14,7 @@ export const up = (pgm) => {
     },
   });
 
+  // Foreign key constraints
   pgm.addConstraint(
     'playlist_songs',
     'fk_playlist_songs.playlist_id_playlists.id',

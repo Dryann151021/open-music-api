@@ -70,7 +70,7 @@ class UsersService {
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
-      throw new NotFoundError('User tidak ditemukan');
+      throw new AuthenticationError('User tidak ditemukan');
     }
 
     const { id, password: encryptedPassword } = result.rows[0];
