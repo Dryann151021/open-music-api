@@ -1,17 +1,56 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
-const album = require('./api/album');
-const song = require('./api/song');
-const albumValidator = require('./validator/album');
-const songValidator = require('./validator/song');
-const AlbumService = require('./services/postgres/AlbumService');
-const SongService = require('./services/postgres/SongService');
+const Jwt = require('@hapi/jwt');
+
+// albums
+const albums = require('./api/albums');
+const albumValidator = require('./validator/albums');
+const AlbumsService = require('./services/postgres/AlbumsService');
+
+// songs
+const songs = require('./api/songs');
+const songValidator = require('./validator/songs');
+const SongsService = require('./services/postgres/SongsService');
+
+// users
+const users = require('./api/users');
+const userValidator = require('./validator/users');
+const UsersService = require('./services/postgres/UsersService');
+
+// authentications
+const authentications = require('./api/authentications');
+const authenticationValidator = require('./validator/authentications');
+const AuthenticationsService = require('./services/postgres/AuthenticationsService');
+const tokenManager = require('./tokenize/tokenManager');
+
+// playlists
+const playlists = require('./api/playlists');
+const playlistValidator = require('./validator/playlists');
+const PlaylistsService = require('./services/postgres/PlaylistsService');
+
+// collaborations
+const collaborations = require('./api/collaborations');
+const collaborationsValidator = require('./validator/collaborations');
+const CollaborationsService = require('./services/postgres/CollaborationsService');
+
+// playlistActivities
+const playlistActivities = require('./api/activities');
+const ActivitiesService = require('./services/postgres/ActivitiesService');
+
 const ClientError = require('./exception/ClientError');
 
 const init = async () => {
-  const albumService = new AlbumService();
-  const songService = new SongService();
+  const albumsService = new AlbumsService();
+  const songsService = new SongsService();
+  const usersService = new UsersService();
+  const authenticationsService = new AuthenticationsService();
+  const collaborationsService = new CollaborationsService();
+  const activitiesService = new ActivitiesService();
+  const playlistsService = new PlaylistsService(
+    collaborationsService,
+    activitiesService
+  );
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -25,17 +64,77 @@ const init = async () => {
 
   await server.register([
     {
-      plugin: album,
+      plugin: Jwt,
+    },
+  ]);
+
+  server.auth.strategy('openmusic_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
+  });
+
+  await server.register([
+    {
+      plugin: albums,
       options: {
-        service: albumService,
+        service: albumsService,
         validator: albumValidator,
       },
     },
     {
-      plugin: song,
+      plugin: songs,
       options: {
-        service: songService,
+        service: songsService,
         validator: songValidator,
+      },
+    },
+    {
+      plugin: users,
+      options: {
+        service: usersService,
+        validator: userValidator,
+      },
+    },
+    {
+      plugin: authentications,
+      options: {
+        service: authenticationsService,
+        usersService,
+        tokenManager,
+        validator: authenticationValidator,
+      },
+    },
+    {
+      plugin: playlists,
+      options: {
+        service: playlistsService,
+        validator: playlistValidator,
+      },
+    },
+    {
+      plugin: collaborations,
+      options: {
+        service: collaborationsService,
+        playlistsService,
+        validator: collaborationsValidator,
+      },
+    },
+    {
+      plugin: playlistActivities,
+      options: {
+        service: activitiesService,
+        playlistsService,
       },
     },
   ]);

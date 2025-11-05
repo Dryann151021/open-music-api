@@ -5,7 +5,7 @@ export const up = (pgm) => {
       primaryKey: true,
     },
     title: {
-      type: 'TEXT',
+      type: 'VARCHAR(80)',
       notNull: true,
     },
     year: {
@@ -13,11 +13,11 @@ export const up = (pgm) => {
       notNull: true,
     },
     performer: {
-      type: 'TEXT',
+      type: 'VARCHAR(50)',
       notNull: true,
     },
     genre: {
-      type: 'TEXT',
+      type: 'VARCHAR(50)',
       notNull: true,
     },
     duration: {

@@ -17,7 +17,7 @@ class AlbumService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows[0].id) {
+    if (!result.rows[0]) {
       throw new InvariantError('Album gagal ditambahkan');
     }
     return result.rows[0].id;
@@ -34,11 +34,8 @@ class AlbumService {
     if (!albumResult.rows.length) {
       throw new NotFoundError('Album tidak ditemukan');
     }
-    const album = {
-      id: albumResult.rows[0].id,
-      name: albumResult.rows[0].name,
-      year: albumResult.rows[0].year,
-    };
+
+    const album = albumResult.rows[0];
 
     const songsQuery = {
       text: 'SELECT id, title, performer FROM songs WHERE album_id = $1',

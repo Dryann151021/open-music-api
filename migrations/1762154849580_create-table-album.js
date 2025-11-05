@@ -5,7 +5,7 @@ export const up = (pgm) => {
       primaryKey: true,
     },
     name: {
-      type: 'TEXT',
+      type: 'VARCHAR(80)',
       notNull: true,
     },
     year: {

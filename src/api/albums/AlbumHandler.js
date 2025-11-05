@@ -1,5 +1,4 @@
 const autoBind = require('auto-bind');
-const NotFoundError = require('../../exception/NotFoundError');
 
 class AlbumHandler {
   constructor(service, validator) {
@@ -30,10 +29,6 @@ class AlbumHandler {
     const { id } = request.params;
 
     const album = await this._service.getAlbumDetail(id);
-
-    if (!album) {
-      throw new NotFoundError('Album tidak ditemukan');
-    }
 
     const response = h.response({
       status: 'success',
