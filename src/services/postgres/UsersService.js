@@ -48,7 +48,7 @@ class UsersService {
 
   async getUserById(userId) {
     const query = {
-      text: 'SELECT * FROM user WHERE id = $1',
+      text: 'SELECT * FROM users WHERE id = $1',
       values: [userId],
     };
 
@@ -61,9 +61,7 @@ class UsersService {
     return result.rows[0];
   }
 
-  /* eslint-disable */
   async verifyUserCredential(username, password) {
-    /* eslint-enable */
     const query = {
       text: 'SELECT id, password FROM users WHERE username = $1',
       values: [username],
@@ -72,7 +70,7 @@ class UsersService {
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
-      throw new AuthenticationError('User tidak ditemukan');
+      throw new NotFoundError('User tidak ditemukan');
     }
 
     const { id, password: encryptedPassword } = result.rows[0];
