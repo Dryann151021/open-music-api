@@ -148,8 +148,9 @@ const init = async () => {
     },
     {
       plugin: _exports,
-      option: {
+      options: {
         service: ProduserService,
+        playlistsService,
         validator: exportValidator,
       },
     },
@@ -177,6 +178,7 @@ const init = async () => {
         message: 'terjadi kegagalan pada server kami',
       });
       newResponse.code(500);
+      console.log(newResponse);
       return newResponse;
     }
 
