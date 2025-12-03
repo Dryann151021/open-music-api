@@ -50,6 +50,9 @@ const StorageService = require('./services/storage/StorageService');
 const albumLikes = require('./api/albumLikes');
 const AlbumLikesService = require('./services/postgres/AlbumLikesService');
 
+// cache
+const CacheService = require('./services/redis/CacheService');
+
 // error handler
 const ClientError = require('./exception/ClientError');
 
@@ -60,15 +63,16 @@ const jwt = config.jwt;
 
 const init = async () => {
   const albumsService = new AlbumsService(pool);
-  const storageService = new StorageService(
-    path.resolve(__dirname, 'api/uploads/file/images')
-  );
   const songsService = new SongsService(pool);
   const usersService = new UsersService(pool);
   const authenticationsService = new AuthenticationsService(pool);
   const collaborationsService = new CollaborationsService(pool);
   const activitiesService = new ActivitiesService(pool);
-  const albumLikesService = new AlbumLikesService(pool);
+  const cacheService = new CacheService();
+  const albumLikesService = new AlbumLikesService(pool, cacheService);
+  const storageService = new StorageService(
+    path.resolve(__dirname, 'api/uploads/file/images')
+  );
   const playlistsService = new PlaylistsService(
     pool,
     collaborationsService,

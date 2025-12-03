@@ -3,8 +3,9 @@ const NotFoundError = require('../../exception/NotFoundError');
 const InvariantError = require('../../exception/InvariantError');
 
 class AlbumLikesService {
-  constructor(pool) {
+  constructor(pool, cacheService) {
     this._pool = pool;
+    this._cacheService = cacheService;
   }
 
   async addAlbumLike(albumId, userId) {
@@ -34,6 +35,7 @@ class AlbumLikesService {
       values: [id, albumId, userId],
     };
 
+    await this._cacheService.del(`likes:${albumId}`);
     await this._pool.query(query);
   }
 
@@ -43,19 +45,36 @@ class AlbumLikesService {
       values: [albumId, userId],
     };
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (result.rowCount === 0) {
       throw new NotFoundError('Like tidak ditemukan');
     }
+
+    await this._cacheService.del(`likes:${albumId}`);
   }
 
   async getAlbumLikes(albumId) {
-    const query = {
-      text: 'SELECT COUNT(*) FROM album_likes WHERE album_id = $1',
-      values: [albumId],
-    };
+    try {
+      const result = await this._cacheService.get(`likes:${albumId}`);
+      return {
+        likes: Number(result),
+        source: 'cache',
+      };
+    } catch (error) {
+      const query = {
+        text: 'SELECT COUNT(*) FROM album_likes WHERE album_id = $1',
+        values: [albumId],
+      };
 
-    const result = await this._pool.query(query);
-    return Number(result.rows[0].count);
+      const result = await this._pool.query(query);
+      const count = Number(result.rows[0].count);
+
+      await this._cacheService.set(`likes:${albumId}`, count, 1800);
+
+      return {
+        likes: count,
+        source: 'database',
+      };
+    }
   }
 }
 
