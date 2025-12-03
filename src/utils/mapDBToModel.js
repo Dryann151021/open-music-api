@@ -22,13 +22,4 @@ const mapSongDetailToModel = ({
   albumId: album_id,
 });
 
-const mapAlbumToModel = ({ id, name, year, cover }) => ({
-  id,
-  name,
-  year,
-  coverUrl: cover
-    ? `http://${process.env.HOST}:${process.env.PORT}/upload/images/${cover}`
-    : null,
-});
-
-module.exports = { mapSongToModel, mapSongDetailToModel, mapAlbumToModel };
+module.exports = { mapSongToModel, mapSongDetailToModel };

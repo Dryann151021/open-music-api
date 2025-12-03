@@ -1,8 +1,9 @@
 const { nanoid } = require('nanoid');
+const { Pool } = require('pg');
 
 class ActivitiesService {
-  constructor(pool) {
-    this._pool = pool;
+  constructor() {
+    this._pool = new Pool();
   }
 
   async addActivity({ playlistId, songId, userId, action }) {
