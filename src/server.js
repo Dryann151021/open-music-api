@@ -46,6 +46,10 @@ const ProduserService = require('./services/rabbitmq/ProducerService');
 // uploads
 const StorageService = require('./services/storage/StorageService');
 
+// albumLikes
+const albumLikes = require('./api/albumLikes');
+const AlbumLikesService = require('./services/postgres/AlbumLikesService');
+
 // error handler
 const ClientError = require('./exception/ClientError');
 
@@ -64,6 +68,7 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService(pool);
   const collaborationsService = new CollaborationsService(pool);
   const activitiesService = new ActivitiesService(pool);
+  const albumLikesService = new AlbumLikesService(pool);
   const playlistsService = new PlaylistsService(
     pool,
     collaborationsService,
@@ -167,6 +172,12 @@ const init = async () => {
         validator: exportValidator,
       },
     },
+    {
+      plugin: albumLikes,
+      options: {
+        service: albumLikesService,
+      },
+    },
   ]);
 
   server.route({
@@ -190,30 +201,6 @@ const init = async () => {
         });
         newResponse.code(response.statusCode);
         return newResponse;
-      }
-
-      // Handle Hapi payload validation errors
-      if (response.isBoom) {
-        // Payload too large error
-        if (response.output.statusCode === 413) {
-          const newResponse = h.response({
-            status: 'fail',
-            message: 'Ukuran file terlalu besar. Maksimal 512KB',
-          });
-          newResponse.code(413);
-          return newResponse;
-        }
-
-        // Unsupported media type error (invalid content-type)
-        if (response.output.statusCode === 415) {
-          const newResponse = h.response({
-            status: 'fail',
-            message:
-              'Tipe file tidak didukung. Hanya gambar yang diperbolehkan',
-          });
-          newResponse.code(400);
-          return newResponse;
-        }
       }
 
       if (!response.isServer) {
