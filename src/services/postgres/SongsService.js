@@ -1,5 +1,4 @@
 const { nanoid } = require('nanoid');
-const { Pool } = require('pg');
 const InvariantError = require('../../exception/InvariantError');
 const NotFoundError = require('../../exception/NotFoundError');
 const {
@@ -7,9 +6,9 @@ const {
   mapSongDetailToModel,
 } = require('../../utils/mapDBToModel');
 
-class SongService {
-  constructor() {
-    this._pool = new Pool();
+class SongsService {
+  constructor(pool) {
+    this._pool = pool;
   }
 
   async addSong({ title, year, performer, genre, duration, albumId }) {
@@ -104,4 +103,4 @@ class SongService {
   }
 }
 
-module.exports = SongService;
+module.exports = SongsService;

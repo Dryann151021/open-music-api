@@ -1,12 +1,11 @@
 const { nanoid } = require('nanoid');
-const { Pool } = require('pg');
 
 const InvariantError = require('../../exception/InvariantError');
 const NotFoundError = require('../../exception/NotFoundError');
 
 class CollaborationsService {
-  constructor() {
-    this._pool = new Pool();
+  constructor(pool) {
+    this._pool = pool;
   }
 
   async addCollaboration(playlistId, userId) {

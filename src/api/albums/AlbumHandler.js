@@ -1,8 +1,9 @@
 const autoBind = require('auto-bind');
 
 class AlbumHandler {
-  constructor(service, validator) {
+  constructor(service, storageService, validator) {
     this._service = service;
+    this._storageService = storageService;
     this._validator = validator;
 
     autoBind(this);
@@ -20,6 +21,23 @@ class AlbumHandler {
       data: {
         albumId: id,
       },
+    });
+    response.code(201);
+    return response;
+  }
+
+  async postUploadCoverHandler(request, h) {
+    const { cover } = request.payload;
+    this._validator.validateImageHeaders(cover.hapi.headers);
+
+    const filename = await this._storageService.writeFile(cover, cover.hapi);
+    const { id } = request.params;
+
+    await this._service.editAlbumCoverById(id, filename);
+
+    const response = h.response({
+      status: 'success',
+      message: 'cover berhasil diupload',
     });
     response.code(201);
     return response;
