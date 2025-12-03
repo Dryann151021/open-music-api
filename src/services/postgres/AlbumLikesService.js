@@ -59,7 +59,7 @@ class AlbumLikesService {
         likes: Number(result),
         source: 'cache',
       };
-    } catch (error) {
+    } catch {
       const query = {
         text: 'SELECT COUNT(*) FROM album_likes WHERE album_id = $1',
         values: [albumId],

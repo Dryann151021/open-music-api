@@ -28,7 +28,7 @@ class AlbumsService {
     try {
       const cachedAlbum = await this._cacheService.get(`album:${id}`);
       return JSON.parse(cachedAlbum);
-    } catch (error) {
+    } catch {
       const albumQuery = {
         text: 'SELECT * FROM albums WHERE id = $1',
         values: [id],
