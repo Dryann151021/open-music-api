@@ -15,12 +15,10 @@ class ExportsHandler {
     const { playlistId } = request.params;
     const { id: userId } = request.auth.credentials;
 
-    // Verify playlist ownership or collaboration access
-    await this._playlistsService.verifyPlaylistOwner(playlistId, userId);
+    await this._playlistsService.verifyPlaylistAccess(playlistId, userId);
 
     const message = {
       playlistId,
-      userId,
       targetEmail: request.payload.targetEmail,
     };
 

@@ -1,4 +1,4 @@
-const AlbumLikesHandler = require('./Handler');
+const AlbumLikesHandler = require('./AlbumLikesHandler');
 const routes = require('./routes');
 
 module.exports = {

@@ -41,11 +41,11 @@ class AlbumLikesService {
 
   async deleteAlbumLike(albumId, userId) {
     const query = {
-      text: 'DELETE FROM album_likes WHERE album_id = $1 AND user_id = $2',
+      text: 'DELETE FROM album_likes WHERE album_id = $1 AND user_id = $2 RETURNING id',
       values: [albumId, userId],
     };
     const result = await this._pool.query(query);
-    if (result.rowCount === 0) {
+    if (!result.rows.length) {
       throw new NotFoundError('Like tidak ditemukan');
     }
 

@@ -1,4 +1,4 @@
-const ExportsHandler = require('./Handler');
+const ExportsHandler = require('./ExportsHandler');
 const routes = require('./routes');
 
 module.exports = {
