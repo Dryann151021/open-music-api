@@ -66,12 +66,12 @@ class AlbumLikesService {
       };
 
       const result = await this._pool.query(query);
-      const count = Number(result.rows[0].count);
+      const likes = Number(result.rows[0].count);
 
-      await this._cacheService.set(`likes:${albumId}`, count, 1800);
+      await this._cacheService.set(`likes:${albumId}`, likes);
 
       return {
-        likes: count,
+        likes,
         source: 'database',
       };
     }

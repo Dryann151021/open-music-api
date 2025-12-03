@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Pool } = require('pg');
+const redis = require('redis');
 
 const config = {
   app: {
@@ -30,4 +31,14 @@ const pool = new Pool({
   port: process.env.PGPORT || 5432,
 });
 
-module.exports = { config, pool };
+const client = redis.createClient({
+  socket: {
+    host: process.env.REDIS_SERVER,
+  },
+});
+
+client.on('error', (error) => {
+  console.log(error);
+});
+
+module.exports = { config, pool, client };

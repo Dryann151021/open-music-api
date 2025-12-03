@@ -57,18 +57,18 @@ const CacheService = require('./services/redis/CacheService');
 const ClientError = require('./exception/ClientError');
 
 // config environment
-const { config, pool } = require('./config');
+const { config, pool, client } = require('./config');
 const app = config.app;
 const jwt = config.jwt;
 
 const init = async () => {
-  const albumsService = new AlbumsService(pool);
+  const cacheService = new CacheService(client);
+  const albumsService = new AlbumsService(pool, cacheService);
   const songsService = new SongsService(pool);
   const usersService = new UsersService(pool);
   const authenticationsService = new AuthenticationsService(pool);
   const collaborationsService = new CollaborationsService(pool);
   const activitiesService = new ActivitiesService(pool);
-  const cacheService = new CacheService();
   const albumLikesService = new AlbumLikesService(pool, cacheService);
   const storageService = new StorageService(
     path.resolve(__dirname, 'api/uploads/file/images')
