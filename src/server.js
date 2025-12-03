@@ -1,5 +1,7 @@
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const Inert = require('@hapi/inert');
+const path = require('path');
 
 // albums
 const albums = require('./api/albums');
@@ -41,6 +43,10 @@ const _exports = require('./api/exports');
 const exportValidator = require('./validator/exports');
 const ProduserService = require('./services/rabbitmq/ProducerService');
 
+// uploads
+const StorageService = require('./services/storage/StorageService');
+
+// error handler
 const ClientError = require('./exception/ClientError');
 
 // config environment
@@ -50,6 +56,9 @@ const jwt = config.jwt;
 
 const init = async () => {
   const albumsService = new AlbumsService(pool);
+  const storageService = new StorageService(
+    path.resolve(__dirname, 'api/uploads/file/images')
+  );
   const songsService = new SongsService(pool);
   const usersService = new UsersService(pool);
   const authenticationsService = new AuthenticationsService(pool);
@@ -75,6 +84,9 @@ const init = async () => {
     {
       plugin: Jwt,
     },
+    {
+      plugin: Inert,
+    },
   ]);
 
   server.auth.strategy('openmusic_jwt', 'jwt', {
@@ -98,6 +110,7 @@ const init = async () => {
       plugin: albums,
       options: {
         service: albumsService,
+        storageService,
         validator: albumValidator,
       },
     },
@@ -156,6 +169,16 @@ const init = async () => {
     },
   ]);
 
+  server.route({
+    method: 'GET',
+    path: '/upload/images/{param*}',
+    handler: {
+      directory: {
+        path: path.resolve(__dirname, 'api/uploads/file/images'),
+      },
+    },
+  });
+
   server.ext('onPreResponse', (Request, h) => {
     const { response } = Request;
 
@@ -167,6 +190,30 @@ const init = async () => {
         });
         newResponse.code(response.statusCode);
         return newResponse;
+      }
+
+      // Handle Hapi payload validation errors
+      if (response.isBoom) {
+        // Payload too large error
+        if (response.output.statusCode === 413) {
+          const newResponse = h.response({
+            status: 'fail',
+            message: 'Ukuran file terlalu besar. Maksimal 512KB',
+          });
+          newResponse.code(413);
+          return newResponse;
+        }
+
+        // Unsupported media type error (invalid content-type)
+        if (response.output.statusCode === 415) {
+          const newResponse = h.response({
+            status: 'fail',
+            message:
+              'Tipe file tidak didukung. Hanya gambar yang diperbolehkan',
+          });
+          newResponse.code(400);
+          return newResponse;
+        }
       }
 
       if (!response.isServer) {
